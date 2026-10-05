@@ -1,0 +1,46 @@
+\section{Experimental Setup}
+\label{sec:setup}
+
+\paragraph{Data and protocol.} We use the public Criteo conversion logs released
+with~\cite{chapelle2014modeling}, the standard corpus for this problem. Clicks span 60 days.
+Days $[0,30)$ initialise the model causally; days $[30,60)$ are the streaming period, divided
+into \nCohorts{} hourly rounds. At each round the model trains on the records released in the
+preceding hour and then scores every click of the following hour exactly once, giving
+\nEval{} scored clicks at a base conversion rate of \baseRate{}. Learning rates are selected per
+arm and per cell from a \nLr{}-point grid on a held-out slice of the initialisation period,
+before any streaming evaluation, and pinned across seeds.
+
+\paragraph{Why one attribution window.} We report $v=1$\,day only. A short click-attribution
+window is the common setting for click-through conversion optimisation, and a single window
+keeps every comparison origin-matched --- arms are compared only against arms trained and
+scored on the same clicks against the same target. The cost is that our conclusions hold for
+short windows (Sect.~\ref{sec:conclusion}).
+
+\paragraph{Axes.} \emph{Served capacity} takes five values from \capMin{} to
+\capMax{} parameters, obtained by scaling the embedding tables and the interaction trunk
+together; the ladder spans more than three orders of magnitude so that a result holding at one model
+size alone cannot masquerade as general. \emph{Write delay} $o$ takes $5$, $30$ and $90$ minutes,
+covering $F(o)$ from \foFive{} to \foNinety{}. Every arm is run at every combination with five seeds. The full one-day reproduction is
+\nArms{} arms, \nCells{} cells and \nRuns{} runs; this paper analyses the four axis arms of
+Sect.~\ref{sec:axis}, the two references, and the frozen-teacher variants of
+Sect.~\ref{sec:results}.
+
+\paragraph{Metric.} We report normalised entropy,
+\begin{equation}
+  \NE \;=\; \frac{\frac{1}{N}\sum_i \big[\,y_i\log \hat p_i + (1-y_i)\log(1-\hat p_i)\,\big]}
+                 {\bar y\log\bar y + (1-\bar y)\log(1-\bar y)},
+\end{equation}
+with $y_i=\Yv_i$, $\bar y$ the base rate, lower better. $\NE$ is pooled over all \nEval{}
+scored clicks rather than averaged over rounds, since a per-round average normalises each hour
+by its own base rate and discards diurnal variation a model can legitimately predict. Our
+headline quantity is the difference $\dNE$ between two arms in one cell: absolute $\NE$ depends
+on corpus and capacity, whereas the question is which target wins at fixed everything-else.
+
+\paragraph{Statistics.} The five seeds differ only in initialisation and minibatch order --- the
+data is identical across them --- so seed $i$ of two arms is a matched pair and we use a paired
+$t$-test within each cell, correcting across the \nContrast{} cells of a contrast with the
+Holm--Bonferroni step-down procedure. We never pool across cells: different $o$ means a
+different label distribution. Seed dispersion is small at every rung (median $\NE$ standard
+deviation \seedSdMed{}, maximum \seedSdMax{} over the arms studied), so cells are individually
+informative. Five seeds measure initialisation and shuffle variance on one data origin ---
+precision, not generalisation --- and we claim nothing beyond this corpus and split.

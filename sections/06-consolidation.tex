@@ -1,0 +1,31 @@
+\section{What This Means for Consolidation}
+\label{sec:consolidation}
+
+Consolidating ranking objectives into one model is an active industrial
+direction~\cite{meta2025gem}, and the obstacle is a pipeline one: under \textsc{Wait}
+objective $k$'s record exists only at $C_i+v_k$, so a shared append-only stream must either
+write $K$ records, violating Rule~2 $K$ times over, or delay everything to $\max_k v_k$ and
+impose the slowest funnel's staleness on the fastest. Our result removes the dilemma: one stream at a single short $o$ can
+carry $\tilde y_{i,k} = \Yo_{i,k} + (1-\Yo_{i,k})\,\wt_k(x_i)$ for every objective at once,
+because $\wt_k$ is a function the pipeline calls rather than an outcome it awaits --- and doing
+so is an improvement, most of all for the slow objectives that forced the segregation.
+
+\textsc{Ulc} evaluates at write time too and reaches the same accuracy, so the choice is
+architectural. It fits each $w_k$ inside the served model's training loop --- $K$ objectives
+become $K$ auxiliaries on one optimiser --- whereas a teacher puts each $w_k$ upstream, its
+only interface a number on a record. The frozen result sharpens this: that model can be a
+shipped artifact, so consolidation adds $K$ build-time artifacts, not $K$ live services.
+
+\paragraph{What this does not establish.} We ran one objective at a time: no evidence on
+interference between objectives sharing a trunk --- the central risk, and what a multi-task
+study must measure --- nor that $K$ teachers are affordable at \teacherParams{} parameters
+each. Our teacher is comparable in size to our largest student, so small-capacity gains partly
+reflect distillation from a larger model; what survives at matched capacity is the smaller
+effect. One corpus, one split.
+
+\paragraph{Conclusion.} The join window a pipeline waits for can be decoupled from the
+attribution window it is accountable to: shortened by three orders of magnitude, at better
+accuracy, with the benefit largest where the funnel is slowest --- provided the record keeps
+part of its hard label. The fully label-free target, the most convenient to consolidate, is the
+one that fails. The experiment this makes worth running is $K$ heads, $K$ windows, one stream,
+teachers upstream.

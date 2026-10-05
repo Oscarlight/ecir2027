@@ -1,0 +1,28 @@
+\section{Experimental Setup}
+\label{sec:setup}
+
+\paragraph{Data and protocol.} The public Criteo conversion logs released
+with~\cite{chapelle2014modeling}. Clicks span 60 days; days $[0,30)$ initialise the model
+causally and days $[30,60)$ are the streaming period, divided into \nCohorts{} hourly rounds
+giving \nEval{} scored clicks at a base conversion rate of \baseRate{}. Learning rates are
+selected per arm and per cell from a \nLr{}-point grid on a held-out slice of the initialisation
+period, before any streaming evaluation, and pinned across seeds.
+
+\paragraph{Axes.} Two \emph{attribution windows}, $v=1$\,d and $7$\,d, standing for a fast and a
+slow funnel; the contrast between them is the paper's point, so we never average across them and
+every comparison is made within one window. Three \emph{join delays}, $o\in\{5,30,90\}$ minutes. Five \emph{served capacities} from
+\capMin{} to \capMax{} parameters, scaling embedding tables and interaction trunk together over
+more than three orders of magnitude, so a result holding at one size cannot pass as general.
+Five seeds everywhere: \nRuns{} runs over \nArms{} arms, of which this paper analyses six.
+
+\paragraph{Metric.} Normalised entropy against $\Yv$, lower better, pooled over all scored
+clicks rather than averaged over rounds --- a per-round average normalises each hour by its own
+base rate and discards diurnal variation a model can legitimately predict. We report the
+difference $\dNE$ between two arms in one cell, since absolute $\NE$ depends on corpus and
+capacity.
+
+\paragraph{Statistics.} Seeds differ only in initialisation and minibatch order, so seed $i$
+of two arms is a matched pair: paired $t$-test within each cell, Holm--Bonferroni across the
+\nContrast{} cells of a contrast. Seed dispersion is small (median $\NE$ sd \seedSdMed{},
+maximum \seedSdMax{}), so cells are individually informative. Five seeds measure initialisation
+variance on one data origin --- precision, not generalisation.

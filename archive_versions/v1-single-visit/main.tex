@@ -1,0 +1,50 @@
+\documentclass[runningheads]{llncs}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+
+% ---- notation, defined once so the symbols cannot drift between sections
+\newcommand{\Yo}{Y^{(o)}}          % label frozen at the fresh release, age o
+\newcommand{\Yv}{Y^{(v)}}          % label at window close, age v
+\newcommand{\pv}{\hat{p}_v}        % teacher's estimate of P(Y^(v)=1 | x)
+\newcommand{\wt}{w^{T}}            % teacher's corrector read-out
+\newcommand{\NE}{\mathrm{NE}}
+\newcommand{\dNE}{\Delta\NE}
+
+\input{generated/macros}
+
+\begin{document}
+
+\title{One Record per Click: Offline-Teacher Soft Targets\\for Delayed Feedback under a
+       Single-Visit Constraint}
+\titlerunning{One Record per Click}
+
+\author{Anonymous}
+\institute{Anonymous}
+\authorrunning{Anonymous}
+
+\maketitle
+
+\begin{abstract}
+\input{sections/00-abstract}
+\keywords{Conversion rate prediction \and Delayed feedback \and Knowledge distillation
+          \and Online learning.}
+\end{abstract}
+
+\input{sections/01-intro}
+\input{sections/02-setting}
+\input{sections/03-axis}
+\input{sections/04-setup}
+\input{sections/05-results}
+\input{sections/06-allinone}
+\input{sections/07-conclusion}
+
+\bibliographystyle{splncs04}
+\bibliography{refs}
+
+\end{document}

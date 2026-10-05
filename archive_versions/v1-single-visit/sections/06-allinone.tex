@@ -1,0 +1,59 @@
+\section{Toward Cross-Funnel Consolidation}
+\label{sec:allinone}
+
+The results above concern one objective; our motivation is several. This section states the
+connection and its limits; it is an argument, not a measurement.
+
+\paragraph{Why heterogeneous windows block consolidation.}
+Consolidating many ranking objectives into one model is an active industrial
+direction~\cite{meta2025gem}. Consider one model serving $K$ conversion objectives --- a
+purchase, an app install, a lead --- with attribution windows $v_1,\dots,v_K$ differing by
+orders of magnitude. Under \textsc{Wait}, objective $k$'s record can only be written at $C_i+v_k$, when its label
+exists, so the $K$ heads want records at $K$ different times. A shared pipeline cannot honour
+that with one write per click: it must either emit a record per objective, which multiplies the
+stream by $K$ and violates Rule~2 $K$ times over, or delay every objective to
+$\max_k v_k$, which imposes the slowest funnel's staleness on the fastest.
+
+What blocks consolidation is therefore the hard matured label, not the architecture.
+
+\paragraph{What a write-time target changes.}
+Both targets we advocate are computable at a single common write time. At $C_i+o$ the pipeline
+can evaluate, for every objective $k$ simultaneously,
+\begin{equation}
+  \tilde y_{i,k} \;=\; \Yo_{i,k} + \left(1-\Yo_{i,k}\right) \wt_k(x_i),
+\end{equation}
+because $\wt_k$ is a function the pipeline can call rather than an outcome it must await. One
+record, written once at one time, can then carry all $K$ targets. The heterogeneity in $v_k$ is
+absorbed into the $K$ teachers, each of which reconciles its own window offline, and the served
+pipeline becomes window-agnostic: it sees features and numbers.
+
+\paragraph{What distinguishes the teacher from the online corrector.}
+\textsc{Ulc} also evaluates its corrector at write time, so it achieves the same alignment, and
+our results show it does so at the same accuracy. The difference is where the per-objective
+machinery lives. \textsc{Ulc} fits each $w_k$ as an auxiliary \emph{inside} the served model's
+training loop, so consolidating $K$ objectives means $K$ auxiliaries coupled to one optimiser,
+each with its own maturity-gated input and its own failure modes. The teacher route places each
+$w_k$ in a separate model upstream, whose only interface to the served pipeline is a number
+attached to a record. That is an argument about modularity, not about $\NE$.
+
+How far that reaches is decided by the frozen-teacher measurement of
+Sect.~\ref{sec:results}, and the answer is conditional. For write delays of 30 minutes or more
+the teacher can be frozen at negligible cost, so each $w_k$ becomes a build-time artifact --- a
+model trained once, shipped, and queried --- and consolidating $K$ objectives adds $K$
+artifacts rather than $K$ live maturity-gated services. At a five-minute pipeline with a large
+served model the teacher must stay live, and the teacher route's operational advantage over
+\textsc{Ulc} narrows to decoupling alone.
+
+\paragraph{What this evidence does not establish.}
+We ran one objective, so we have no evidence about interference between objectives sharing a
+trunk --- the central risk of consolidation, and what a multi-task study would have to measure.
+We have no evidence that $K$ teachers are affordable, only that one is: teacher capacity is
+training-only but not free, and \teacherParams{} parameters per objective is a real cost. And
+our single objective has a short window, the easy case; at $v=28$~days the teacher's own labels
+are far staler, and the argument would need re-testing rather than extrapolating.
+
+What we claim is narrower and, we think, still worth reporting: under a constraint that
+eliminates most published methods, a target computable at write time is available that costs
+nothing against the status quo, and the most pipeline-convenient version of it --- the one that
+carries no hard label at all --- is the one that does not work. That is a negative result
+cheaper to learn on one objective than on $K$.

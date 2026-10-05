@@ -1,0 +1,35 @@
+\section{Introduction}
+\label{sec:intro}
+
+Conversion pipelines are segregated by speed: a purchase is joined on a one-day window, an
+app install or a lead on a week or a month. Each objective gets its own stream because each
+must wait for its own label to exist, and is stale by the width of the window it waited for.
+Consolidating several objectives into one model therefore meets a pipeline problem before a
+modelling one: $K$ objectives with $K$ attribution windows want $K$ records at $K$ times.
+
+The obvious escape is not to wait. Write the record promptly, at a \emph{join delay} $o$ of
+minutes rather than days, and accept the label visible then. That label is systematically wrong: every conversion still in flight is recorded as a
+negative. A long line of work corrects the
+bias~\cite{chapelle2014modeling,yasui2020feedback,yang2021capturing,chen2022asymptotically,ding2026delayed},
+but most corrections repair the record after the fact --- duplicating the event when its
+outcome arrives, relabelling it, or adding heads at further horizons --- which an append-only
+training log cannot do cheaply. We make the restriction explicit as a \emph{single-visit} constraint --- at most one training
+record per click, its label frozen when written --- and measure who obeys it: reproducing
+\nScreened{} published methods on the Criteo logs, \nFail{} write more than one, up to
+\maxDup{} per click (Sect.~\ref{sec:setting}).
+
+What remains is one question: if the record must be written at $o$ and carry one frozen
+target, what should that target be? We study four answers --- from the censored outcome,
+through the matured one, to targets supplied by an offline teacher --- across five served
+capacities and three join delays, and find the segregation unnecessary. Replacing a seven-day join with a five-minute one,
+a factor of \ratioSeven{}, and filling the gap with a teacher's estimate \emph{improves} $\NE$
+in all \nContrast{} cells we measure, by \collapseSevenBest{} to \collapseSevenWorst{}. At a
+one-day window the same substitution gains \collapseOneBest{} to \collapseOneWorst{}. The gain grows as the funnel slows --- the opposite of the usual intuition, and it means the
+pipelines most worth collapsing benefit most. The teacher can be a shipped artifact rather than
+a live service and still beats the long-join baseline in \frzSevenBeat{} of \frzSevenN{} cells
+at seven days.
+
+The collapse is conditional, and the condition is our second finding: the record must keep
+\emph{part} of its hard label. Discarding it entirely --- the most convenient target for a
+consolidated pipeline, carrying no attribution window at all --- helps only at the smallest
+capacities and loses to waiting at the three largest, consistently across join delays.

@@ -1,0 +1,24 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+Imposing one production constraint --- at most one training record per click, its label frozen
+when written --- eliminates \nFail{} of \nScreened{} published delayed-feedback methods, several
+by wide margins, and leaves a design space whose only remaining choice is the target the single
+record carries. Along that axis at a one-day window: waiting for the matured label far beats
+training on the censored one; an offline teacher's estimate substituted for part of the hard
+label improves on waiting in every cell; removing the hard label entirely does not, crossing
+from better to worse as served capacity grows; and the hybrid matches an online corrector
+rather than beating it, so the case for a teacher is architectural.
+
+\paragraph{Limitations.} One dataset and one temporal split. One attribution window,
+deliberately the
+short-window case where the teacher's job is easiest. And a teacher fixed at a capacity
+comparable to our largest student, so small-capacity gains partly reflect distillation from a
+larger model rather than delayed-feedback correction; the effect surviving at matched capacity
+is the smaller one.
+
+\paragraph{Next.} The experiment this is a precondition for is the multi-objective one: $K$
+heads with $K$ windows on one trunk, one record per click, per-objective teachers upstream. It
+must answer whether objectives interfere when sharing a trunk, and whether $K$ teachers are
+affordable. Our result says the target construction is sound enough to make the question worth
+asking.

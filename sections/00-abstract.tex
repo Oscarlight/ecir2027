@@ -1,0 +1,18 @@
+Conversion pipelines are segregated by speed: a fast funnel joins on a one-day window, a slow
+one on a week or a month, because each must wait for its own label. We ask whether the
+\emph{join} delay can be decoupled from the \emph{attribution} window it answers to. A short join records every in-flight conversion as a negative, and most published
+corrections repair the record afterwards --- duplicating the event, relabelling it, adding
+horizons --- which an append-only log cannot do cheaply: under a single-visit constraint (one
+record per click, label frozen when written) \nFail{} of \nScreened{} published methods violate
+it, up to \maxDup{} records per click.
+
+What is left is a choice of target. On the public Criteo logs, across five served capacities
+(\capMin{}--\capMax{} parameters) and three join delays, replacing a seven-day join with a
+five-minute one and letting an offline teacher stand in for the unseen conversions
+\emph{improves} $\NE$ in all \nContrast{} cells, by \collapseSevenBest{} to
+\collapseSevenWorst{}; at a one-day window the same substitution gains \collapseOneBest{} to
+\collapseOneWorst{}. The gain grows as the funnel slows --- the pipelines most worth collapsing
+benefit most --- and the teacher may be a shipped artifact rather than a live service. The
+collapse is conditional: the record must keep \emph{part} of its hard label. Discarding it
+entirely, the most convenient target for a consolidated pipeline, helps only at the smallest
+capacities and loses to waiting at the three largest.

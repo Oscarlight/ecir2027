@@ -1,0 +1,52 @@
+\section{Introduction}
+\label{sec:intro}
+
+A conversion-rate model must be trained on events that have not happened yet. The click is
+observable at once; the conversion it may cause arrives minutes, hours or days later. Wait for
+the attribution window to close and the model is always stale by its width. Do not wait, and
+every conversion still in flight is recorded as a negative.
+
+A long line of work corrects this, from an explicit model of the delay
+distribution~\cite{chapelle2014modeling} through importance weighting~\cite{yasui2020feedback},
+elapsed-time sampling~\cite{yang2021capturing}, re-ingesting an event once its outcome is
+known~\cite{ktena2019addressing,gu2021real}, unbiased treatment of the fake-negative
+population~\cite{chen2022asymptotically}, multiple prediction
+horizons~\cite{li2021follow,liu2024online,zhang2025personalized}, and corrective updates from
+influence functions~\cite{ding2026delayed}. The statistics differ; but realised as streaming
+pipelines, many of them need the training stream to be something one can go back and add to.
+
+We are interested in the case where it is not. In an append-only log a record is written
+once, at a fixed age after the click, carrying whatever the label is then, and never rewritten.
+Revisiting such a click means either mutating its label --- which turns a stream into a
+database and makes a reader's view depend on when it read --- or appending a second record.
+Appending is cheaper to build but not free statistically: a click whose conversion arrives late
+then appears more often than one that never converts, so the fitted example distribution no
+longer matches the traffic, and the multiplier hits training cost at every step. Call the property that avoids both
+\emph{single-visit} --- at most one training record per click, its label frozen when written.
+It is a restriction one may reasonably pay to escape; we ask only that the price be visible.
+
+We reproduce \nScreened{} delayed-feedback methods from the literature from scratch on the
+public Criteo conversion logs and count the training records each one's served model consumes
+per click, at a one-day attribution window. \nFail{} write more than one --- up to \maxDup{}
+records per click on average, and \maxVisits{} for a single click at worst. Only \passList{}
+are single-visit.
+
+What survives is narrow enough to be informative: once a method may write one record, the
+only freedom left is \emph{what label it carries} --- a hard label that is wrong (the censored
+outcome), one that is right but late (wait for the window), or a target partly or wholly
+supplied by a model. We instantiate four points on this \emph{target-hardness} axis and ask
+what each degree of softness buys at fixed single-visit cost.
+
+Waiting beats the censored label by a wide margin at short write delays, so the status quo is no
+straw man. Replacing part of the hard label with an offline teacher's estimate lowers $\NE$
+against waiting in all \cdWaitN{} cells (\cdWaitSig{} significantly); removing the hard label
+\emph{entirely} does not, helping only at the smallest capacities and losing to waiting at the
+largest. And the hybrid matches an online label corrector~\cite{wang2023unbiased} to within noise ---
+which matters less for accuracy than for where each puts the machinery. A model serving several
+conversion objectives must reconcile attribution windows differing by orders of magnitude. An
+online corrector entangles each window with the served model's own training loop; a teacher
+moves it upstream, leaving the served pipeline to consume records that carry a number and no
+window at all. We also measure how much of the teacher must stay live: freezing it after initialisation, so
+that it becomes a build-time artifact rather than a running service, costs \frzMean{} $\NE$ on
+average. This is a precondition for consolidating many objectives, not a demonstration of it;
+Sect.~\ref{sec:allinone} states what the evidence supports.

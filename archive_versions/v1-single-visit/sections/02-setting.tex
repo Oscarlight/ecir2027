@@ -1,0 +1,73 @@
+\section{Setting and the Single-Visit Constraint}
+\label{sec:setting}
+
+\subsection{Streaming protocol}
+
+A click $i$ occurs at time $C_i$ with features $x_i$ and, if it converts, does so after a delay
+$D_i>0$ ($D_i=\infty$ otherwise). An \emph{attribution window} $v$ fixes the business target,
+$\Yv_i=\mathbf{1}[D_i\le v]$, knowable only at $C_i+v$. A streaming pipeline cannot wait that
+long, so it writes the record at a \emph{write delay} $o\ll v$ carrying the outcome visible
+then:
+\begin{equation}
+  \Yo_i \;=\; \mathbf{1}\!\left[D_i \le o\right] \;\le\; \Yv_i .
+  \label{eq:labels}
+\end{equation}
+$\Yo$ is never a false positive and often a false negative; how often is
+$F(o)=P(D\le o\mid D\le v)$, the share of the target's positives visible at write time. At
+$v=1$\,d on our corpus $F(o)=\foFive$, $\foThirty$, $\foNinety$ for $o=5$, $30$, $90$ minutes:
+at a five-minute pipeline two thirds of the conversions that will count are still missing.
+Training runs in hourly rounds --- consume the records released since the last cut-off, then
+score every click of the next hour once, retrospectively against $\Yv$ --- so every method is
+judged on the true business label whatever it trained on, and update-then-predict keeps the
+evaluation causal.
+
+\subsection{Two admissibility rules}
+
+\textbf{Rule 1 (causality).} A record's label must be computable when the record is written
+and must not change afterwards. Labelling a record $\Yv$ while writing it at $C_i+o$ uses an
+outcome that has not happened --- an upper reference (\textsc{Oracle}), not a system. Strict.
+
+\textbf{Rule 2 (single-visit).} Writing $n_i$ for the number of times click $i$ enters the
+served model's loss over its lifetime, Rule~2 requires $\max_i n_i\le 1$: a strong practical
+constraint, being the property that decides whether a method drops into an append-only pipeline
+unchanged.
+
+The criterion is $\max_i n_i$, not the mean: it is the \emph{existence} of a second write, not
+its frequency, that obliges the pipeline to support one. And the rule governs the \emph{served} model's stream: auxiliary estimators (importance
+weights, delay heads, teachers) are not charged, because the served stream is what the pipeline
+must materialise. Under a stricter reading, in which any auxiliary fitted on matured labels
+counts as a second visit, the screen would eliminate \textsc{Fsiw}, \textsc{Ulc} \emph{and
+both of our own soft-target arms} alike.
+
+\subsection{The screen}
+
+Table~\ref{tab:screen} reports, for \nScreened{} methods reproduced from scratch under one
+protocol, the training records per click their served model consumes at $v=1$\,d.\footnote{Two measurement traps, both of which understate duplication.
+Dividing records consumed by records released conflates duplication with traffic variation,
+since a maturity-gated stream reads clicks from $v$ ago when the click rate differed; the
+denominator must be \emph{distinct clicks touched}. And a window shorter than a method's revisit
+horizon cannot see the revisit, so we score only clicks whose entire horizon lies inside the
+stream. Duplication is a property of emission logic, not of the model: re-running the audit at
+the smallest and largest capacities of Sect.~\ref{sec:setup} gives identical counts.}
+
+\begin{table}[t]
+\centering
+\caption{The single-visit screen at $v=1$\,d. \emph{Records/click} is the lifetime number of
+training records the served model consumes per distinct click; \emph{max} is the largest for any
+single click. \nFail{} of \nScreened{} methods write more than one.}
+\label{tab:screen}
+\input{generated/tab_screen}
+\end{table}
+
+\nFail{} of \nScreened{} methods write more than one record for at least one click, and the
+factors are not marginal: \textsc{Ftp} consumes \maxDup{} records per click, \textsc{Miss}
+\missDup{}, and \maxVisitsArm{} reaches \maxVisits{} writes for a single click, its mechanism
+being an update applied whenever a label reverses. Only \passList{} are single-visit. The plain
+re-ingestion baseline --- write the click as a negative, write a positive when the conversion
+lands~\cite{ktena2019addressing,gu2021real} --- is not a named correction and so is not listed,
+but our implementation measures \vanillaDup{} records per click and fails the same criterion.
+
+Of the survivors, \textsc{Fsiw} corrects the \emph{loss} and \textsc{Twice} adds a head on
+the conversion clock; both leave the record's target untouched. \textsc{Ulc} alone changes the
+target, making it the comparator for the axis we study next --- not because the other two are
+inferior, but because varying three axes at once would attribute nothing.

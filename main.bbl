@@ -1,0 +1,56 @@
+\begin{thebibliography}{10}
+\providecommand{\url}[1]{\texttt{#1}}
+\providecommand{\urlprefix}{URL }
+\providecommand{\doi}[1]{https://doi.org/#1}
+
+\bibitem{chapelle2014modeling}
+Chapelle, O.: Modeling delayed feedback in display advertising. In: Proc. KDD.
+  pp. 1097--1105 (2014)
+
+\bibitem{chen2022asymptotically}
+Chen, Y., Jin, J., Zhao, H., Wang, P., Liu, G., Xu, J., Zheng, B.:
+  Asymptotically unbiased estimation for delayed feedback modeling via label
+  correction. In: Proc. WWW. pp. 369--379 (2022)
+
+\bibitem{ding2026delayed}
+Ding, C., Wu, J., Yuan, Y., Li, C., Wang, X., Wang, D., Yang, F., Rabinovich,
+  A.: Delayed feedback modeling with influence functions. Proc. AAAI
+  \textbf{40}(17),  14648--14656 (2026)
+
+\bibitem{gu2021real}
+Gu, S., Sheng, X.R., Fan, Y., Zhou, G., Zhu, X.: Real negatives matter:
+  Continuous training with real negatives for delayed feedback modeling. In:
+  Proc. KDD. pp. 2890--2898 (2021)
+
+\bibitem{ktena2019addressing}
+Ktena, S.I., Tejani, A., Theis, L., Myana, P.K., Dilipkumar, D., Huszar, F.,
+  Yoo, S., Shi, W.: Addressing delayed feedback for continuous training with
+  neural networks in ctr prediction. In: Proc. RecSys. pp. 187--195 (2019)
+
+\bibitem{menon2021statistical}
+Menon, et~al.: A statistical perspective on distillation. In: Proc. ICML (2021)
+
+\bibitem{meta2025gem}
+{Meta AI}: Sequence learning: A paradigm shift for personalized ads
+  recommendations. Meta AI Engineering Blog (2025),
+  \url{https://ai.meta.com/blog/generative-ads-recommendation-model-gem/}
+
+\bibitem{wang2023unbiased}
+Wang, Y., Sun, P., Zhang, M., Jia, Q., Li, J., Ma, S.: Unbiased delayed
+  feedback label correction for conversion rate prediction. In: Proc. KDD. pp.
+  2456--2466 (2023)
+
+\bibitem{xu2020privileged}
+Xu, et~al.: Privileged features distillation at {Taobao} recommendations (2019)
+
+\bibitem{yang2021capturing}
+Yang, J.Q., Li, X., Han, S., Zhuang, T., Zhan, D.C., Zeng, X., Tong, B.:
+  Capturing delayed feedback in conversion rate prediction via elapsed-time
+  sampling. Proc. AAAI  \textbf{35}(5),  4582--4589 (2021)
+
+\bibitem{yasui2020feedback}
+Yasui, S., Morishita, G., Fujita, K., Shibata, M.: A feedback shift correction
+  in predicting conversion rates under delayed feedback. In: Proc. WWW. pp.
+  2740--2746 (2020)
+
+\end{thebibliography}

@@ -1,0 +1,77 @@
+\section{A Target-Hardness Axis}
+\label{sec:axis}
+
+Under Rule~2 a method gets exactly one record per click, so the design space collapses to one
+question: what target $\tilde y_i$ does that record carry? Table~\ref{tab:axis} lists the four
+points we study; the pipeline, schedule, features and optimiser are identical across them.
+
+\begin{table}[t]
+\centering
+\caption{The four points of the target-hardness axis. $\Delta$ is the age at which the record is
+written. Only \textsc{Wait} defers the write; the rest emit at $o$ and differ in what they put
+in the label field.}
+\label{tab:axis}
+\begin{tabular}{@{}llll@{}}
+\toprule
+Arm & Target $\tilde y_i$ & $\Delta$ & Hard label \\
+\midrule
+\textsc{Fresh}           & $\Yo_i$                                  & $o$ & censored \\
+\textsc{Wait}            & $\Yv_i$                                  & $v$ & true, late \\
+\textsc{Correct-Distill} & $\Yo_i + (1-\Yo_i)\,\wt(x_i)$            & $o$ & positives only \\
+\textsc{Distill-Only}    & $\pv(x_i)$                               & $o$ & none \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textsc{Fresh} is the uncorrected floor: by Eq.~\eqref{eq:labels} it trains on a label wrong for
+a $1-F(o)$ share of eventual positives. \textsc{Wait} defers the write until the outcome is
+real, so its label is correct but the freshest example it has ever seen is $v$ old; a
+practitioner who refuses both to duplicate records and to train on wrong labels is already
+running it. \textsc{Wait} is also the same kind of object as the teacher below --- a model
+fitted on matured records --- so this paper's central contrast reads as one question: is it
+better to \emph{serve} the matured model, or to distil it into a student riding the fresh
+pipeline?
+
+\textsc{Correct-Distill} keeps the realised label and softens only the observed negatives,
+\begin{equation}
+  \tilde y_i \;=\; \Yo_i + (1-\Yo_i)\,\wt(x_i),
+  \qquad
+  \wt(x) \approx P\!\left(\Yv{=}1 \,\middle|\, \Yo{=}0,\, x\right),
+  \label{eq:hybrid}
+\end{equation}
+so an observed positive is certain and stays exactly $1$. This is the functional form of
+\textsc{Ulc}~\cite{wang2023unbiased}; what differs is the estimator, and because the form is
+shared exactly, a comparison between them isolates the estimator and nothing else.
+\textsc{Distill-Only} goes further and regresses on $\pv(x)\approx P(\Yv{=}1\mid x)$ alone: the
+record then carries features and a number, and no observation of what happened.
+
+\subsection{The teacher}
+
+The teacher is a separate model trained on the \emph{matured} stream --- a record enters it at
+$C_i+v$ carrying $\Yv_i$, so its own labels are correct and frozen, and it measures $1.00$
+records per click under the audit of Table~\ref{tab:screen}. It carries $\pv$ and $\wt$ as two
+read-outs on one trunk, and the student consumes one of them. Crucially it is \emph{evaluated}
+at the fresh release: at $C_i+o$ the student queries it for $x_i$ and freezes the resulting
+number into the record. The target is therefore knowable when the record is written and never
+revised, so Rule~1 holds even though the target is soft: softness is not an exemption from
+causality, only a different way of satisfying it. The construction is an instance of
+distillation from
+privileged information~\cite{xu2020privileged}: the teacher sees the matured label, which is
+precisely what the student cannot see at write time, and transfers it as a number rather than
+as an observation.
+
+Teacher capacity is fixed at \teacherParams{} parameters for every student. This is
+deliberate: the teacher is training-only, so its size costs nothing at serving
+time, but it means \emph{served} capacity is matched across arms while total training capacity
+is not. At our largest rung student and teacher are comparable; at the smallest the teacher is
+three orders of magnitude larger.
+
+The teacher is \emph{decoupled} --- its parameters are not in the served model's optimiser ---
+but it need not be \emph{frozen}: our default teacher keeps learning from the matured stream, so it is a live
+service, whereas one frozen after causal initialisation would be a build-time artifact ---
+cheaper to operate, less informed. We run both (Sect.~\ref{sec:results}).
+
+\textsc{Oracle}, our upper reference, writes at $\Delta=o$ but labels the record $\Yv_i$: it
+violates Rule~1 by construction and bounds what a correction could recover --- in our setting
+in all \cdOracleN{} cells but one, where the difference is not significant, though this is not
+guaranteed in general.

@@ -1,0 +1,19 @@
+Conversion-rate models must be trained before their labels exist. Most published corrections for
+this delay assume the training stream can be revisited --- a record is written at click time and
+repaired later by duplicating the event, relabelling it, or adding heads at further horizons. An
+append-only pipeline cannot do that cheaply. We impose a \emph{single-visit} constraint --- at
+most one training record per click, its label frozen when written --- and measure how many
+published methods satisfy it: reproducing \nScreened{} of them from scratch on the Criteo
+conversion logs at a one-day attribution window, \nFail{} write more than one record for at
+least one click, up to \maxDup{} on average and \maxVisits{} at worst. What survives is a narrow
+design space in which the only remaining choice is the target the single record carries. We
+study four points on that target-hardness axis across five served capacities
+(\capMin{}--\capMax{} parameters) and three pipeline write delays. Waiting for the matured label
+beats training on the censored one by a wide margin. Replacing part of the hard label with an
+offline teacher's estimate improves on waiting in all \cdWaitN{} cells; removing the hard label
+entirely does not, crossing from better than waiting to worse as capacity grows. The hybrid
+target matches an online label corrector to within noise rather
+than beating it, so the case for an upstream teacher is architectural: it is what lets $K$
+objectives with $K$ different attribution windows share one record written at one time.
+Freezing the teacher into a build-time artifact costs \frzMean{} $\NE$, and nothing at all at
+write delays of 30 minutes or more.
